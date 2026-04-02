@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model admin {
+  id_admin   Int         @id @default(autoincrement())
+  nama_admin String?     @db.VarChar
+  email      String?     @unique @db.VarChar
+  password   String?     @db.VarChar
+  audit_log  audit_log[]
+  instansi   instansi[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model audit_log {
+  id_log    Int       @id @default(autoincrement())
+  admin_id  Int?
+  aksi      String?   @db.VarChar
+  target_id Int?
+  tgl_aksi  DateTime? @default(now()) @db.Timestamp(6)
+  admin     admin?    @relation(fields: [admin_id], references: [id_admin], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model bookmark_lowongan {
+  id_bookmark Int       @id @default(autoincrement())
+  id_pelamar  Int?
+  id_lowongan Int?
+  lowongan    lowongan? @relation(fields: [id_lowongan], references: [id_lowongan], onDelete: NoAction, onUpdate: NoAction)
+  pelamar     pelamar?  @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model faqs {
+  id_faq     Int     @id @default(autoincrement())
+  pertanyaan String? @db.VarChar
+  jawaban    String?
+  kategori   String? @db.VarChar
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model instansi {
+  id_instansi        Int               @id @default(autoincrement())
+  id_kota            Int?
+  nama_instansi      String?           @db.VarChar
+  slug               String?           @unique @db.VarChar
+  email              String?           @unique @db.VarChar
+  password           String?           @db.VarChar
+  email_verified_at  DateTime?         @db.Timestamp(6)
+  status_akun        String?           @default("aktif") @db.VarChar
+  tipe_akun          String?           @default("reguler") @db.VarChar
+  deskripsi          String?
+  alamat_lengkap     String?
+  latitude           Decimal?          @db.Decimal(10, 8)
+  longitude          Decimal?          @db.Decimal(11, 8)
+  logo_instansi      String?           @db.VarChar
+  banner_instansi    String?           @db.VarChar
+  dokumen_verifikasi String?           @db.VarChar
+  status_verifikasi  Boolean?          @default(false)
+  verifikasi_oleh    Int?
+  created_at         DateTime?         @default(now()) @db.Timestamp(6)
+  deleted_at         DateTime?         @db.Timestamp(6)
+  wilayah_bengkulu   wilayah_bengkulu? @relation(fields: [id_kota], references: [id_kota], onDelete: NoAction, onUpdate: NoAction)
+  admin              admin?            @relation(fields: [verifikasi_oleh], references: [id_admin], onDelete: NoAction, onUpdate: NoAction)
+  instansi_galeri    instansi_galeri[]
+  lowongan           lowongan[]
+  notifikasi         notifikasi[]
+  rating_instansi    rating_instansi[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model instansi_galeri {
+  id_foto     Int       @id @default(autoincrement())
+  id_instansi Int?
+  foto_url    String?   @db.VarChar
+  caption     String?   @db.VarChar
+  instansi    instansi? @relation(fields: [id_instansi], references: [id_instansi], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model kategori {
+  id_kategori   Int        @id @default(autoincrement())
+  nama_kategori String?    @db.VarChar
+  lowongan      lowongan[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model lamaran {
+  id_lamaran      Int               @id @default(autoincrement())
+  id_lowongan     Int?
+  id_pelamar      Int?
+  tgl_melamar     DateTime?         @default(now()) @db.Timestamp(6)
+  status_lamaran  String?           @db.VarChar
+  lowongan        lowongan?         @relation(fields: [id_lowongan], references: [id_lowongan], onDelete: NoAction, onUpdate: NoAction)
+  pelamar         pelamar?          @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+  lamaran_history lamaran_history[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model lamaran_history {
+  id_history    Int       @id @default(autoincrement())
+  id_lamaran    Int?
+  status_lama   String?   @db.VarChar
+  status_baru   String?   @db.VarChar
+  keterangan    String?
+  tgl_perubahan DateTime? @default(now()) @db.Timestamp(6)
+  lamaran       lamaran?  @relation(fields: [id_lamaran], references: [id_lamaran], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model lowongan {
+  id_lowongan         Int                 @id @default(autoincrement())
+  id_instansi         Int?
+  id_kota             Int?
+  id_kategori         Int?
+  judul_pekerjaan     String?             @db.VarChar
+  slug                String?             @unique @db.VarChar
+  deskripsi_pekerjaan String?
+  persyaratan         String?
+  tipe_pekerjaan      String?             @db.VarChar
+  gaji_min            Int?
+  gaji_max            Int?
+  tampilkan_gaji      Boolean?            @default(true)
+  is_urgent           Boolean?            @default(false)
+  views               Int?                @default(0)
+  tgl_tutup           DateTime?           @db.Date
+  status_aktif        Boolean?            @default(true)
+  created_at          DateTime?           @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?           @db.Timestamp(6)
+  bookmark_lowongan   bookmark_lowongan[]
+  lamaran             lamaran[]
+  instansi            instansi?           @relation(fields: [id_instansi], references: [id_instansi], onDelete: NoAction, onUpdate: NoAction)
+  kategori            kategori?           @relation(fields: [id_kategori], references: [id_kategori], onDelete: NoAction, onUpdate: NoAction)
+  wilayah_bengkulu    wilayah_bengkulu?   @relation(fields: [id_kota], references: [id_kota], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id_kategori])
+  @@index([id_kota])
+  @@index([slug])
+  @@index([status_aktif])
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model notifikasi {
+  id_notifikasi Int       @id @default(autoincrement())
+  id_pelamar    Int?
+  id_instansi   Int?
+  pesan         String?
+  is_read       Boolean?  @default(false)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  instansi      instansi? @relation(fields: [id_instansi], references: [id_instansi], onDelete: NoAction, onUpdate: NoAction)
+  pelamar       pelamar?  @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model password_resets {
+  email      String    @id @db.VarChar
+  token      String?   @db.VarChar
+  created_at DateTime? @db.Timestamp(6)
+}
+
+model pelamar {
+  id_pelamar         Int                  @id @default(autoincrement())
+  nama_lengkap       String?              @db.VarChar
+  email              String?              @unique @db.VarChar
+  password           String?              @db.VarChar
+  email_verified_at  DateTime?            @db.Timestamp(6)
+  status_akun        String?              @default("aktif") @db.VarChar
+  no_hp              String?              @db.VarChar
+  no_hp_alternatif   String?              @db.VarChar
+  alamat_pelamar     String?
+  cv_file            String?              @db.VarChar
+  foto_profil        String?              @db.VarChar
+  linkedin_url       String?              @db.VarChar
+  github_url         String?              @db.VarChar
+  portfolio_url      String?              @db.VarChar
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  deleted_at         DateTime?            @db.Timestamp(6)
+  bookmark_lowongan  bookmark_lowongan[]
+  lamaran            lamaran[]
+  notifikasi         notifikasi[]
+  pelamar_skills     pelamar_skills[]
+  pendidikan_pelamar pendidikan_pelamar[]
+  pengalaman_kerja   pengalaman_kerja[]
+  rating_instansi    rating_instansi[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model pelamar_skills {
+  id_pelamar Int
+  id_skill   Int
+  pelamar    pelamar @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+  skills     skills  @relation(fields: [id_skill], references: [id_skill], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id_pelamar, id_skill])
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model pendidikan_pelamar {
+  id_pendidikan       Int      @id @default(autoincrement())
+  id_pelamar          Int?
+  nama_kampus_sekolah String?  @db.VarChar
+  jenjang             String?  @db.VarChar
+  jurusan             String?  @db.VarChar
+  tahun_lulus         Int?
+  pelamar             pelamar? @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model pengalaman_kerja {
+  id_pengalaman   Int      @id @default(autoincrement())
+  id_pelamar      Int?
+  posisi          String?  @db.VarChar
+  perusahaan      String?  @db.VarChar
+  tahun_mulai     Int?
+  tahun_selesai   Int?
+  deskripsi_tugas String?
+  pelamar         pelamar? @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model rating_instansi {
+  id_rating_instansi Int       @id @default(autoincrement())
+  id_instansi        Int?
+  id_pelamar         Int?
+  skor_bintang       Int?
+  komentar           String?
+  tgl_rating         DateTime? @default(now()) @db.Timestamp(6)
+  instansi           instansi? @relation(fields: [id_instansi], references: [id_instansi], onDelete: NoAction, onUpdate: NoAction)
+  pelamar            pelamar?  @relation(fields: [id_pelamar], references: [id_pelamar], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model rating_website {
+  id_rating_web Int       @id @default(autoincrement())
+  user_id       Int?
+  user_type     String?   @db.VarChar
+  skor_bintang  Int?
+  saran_masukan String?
+  tgl_feedback  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model settings {
+  key   String  @id @db.VarChar
+  value String?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model skills {
+  id_skill       Int              @id @default(autoincrement())
+  nama_skill     String?          @db.VarChar
+  pelamar_skills pelamar_skills[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model wilayah_bengkulu {
+  id_kota   Int        @id @default(autoincrement())
+  nama_kota String?    @db.VarChar
+  instansi  instansi[]
+  lowongan  lowongan[]
+}
