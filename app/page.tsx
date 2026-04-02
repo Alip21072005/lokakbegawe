@@ -1,12 +1,18 @@
-import Navbar from "./components/navbar";
-import Footer from "./components/footer";
+import prisma from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  // Ambil data wilayah dari database dblokakbegawe
+  const dataWilayah = await prisma.wilayah_bengkulu.findMany();
+
   return (
-    <>
-      <Navbar />
-      <h1>Welcome to the Home Page</h1>
-      <Footer />
-    </>
+    <main className="p-10">
+      <h1 className="text-2xl font-bold">Halo dari dblokakbegawe! 🌴</h1>
+      <p className="mt-4">Daftar Kota di Bengkulu:</p>
+      <ul className="mt-2 list-disc pl-5">
+        {dataWilayah.map((item) => (
+          <li key={item.id_kota}>{item.nama_kota}</li>
+        ))}
+      </ul>
+    </main>
   );
 }
